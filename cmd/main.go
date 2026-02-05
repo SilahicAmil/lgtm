@@ -21,6 +21,7 @@ func main() {
 	}
 
 	// Summary
+	// DONE DONE DONE DONE
 	// Phase 1: Check we are in a git repo
 	// What branch are we on?
 	// Is the repo dirty?
@@ -28,7 +29,8 @@ func main() {
 	// Phase 2: Inspect diffs/files
 	// Just show what was found
 	//
-	// PHASE 1 and 2 DONE
+	// DONE DONE DONE DONE
+
 	// Phase 3: Show clean vs dirty
 	// Ask user what they want to do
 	// Can exit early

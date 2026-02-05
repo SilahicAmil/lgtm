@@ -2,6 +2,7 @@ package ship
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 )
@@ -13,9 +14,11 @@ type ShipResult struct {
 	Completed  map[string]bool
 }
 
+var patterns = []string{"console.log", "error_log"}
+
 // Eventually move to /git folder
 // Split each into it's own reusable thing maybe?
-// Probably have
+// Probably have like a client.go to handle the exec.command stuff
 func (sr *ShipResult) CheckStatusAndBranch() error {
 	// Get the current branch
 	branchCmd := exec.Command("git", "branch", "--show-current")
@@ -46,10 +49,8 @@ func (sr *ShipResult) CheckStatusAndBranch() error {
 			continue
 		}
 
-		fileName := strings.TrimSpace(line[3:])
-		fmt.Println(fileName)
-
-		sr.CleanFiles[fileName] = "Initial Scan"
+		fileName := strings.TrimSpace(line[2:])
+		sr.CleanFiles[fileName] = "All Good"
 	}
 
 	return nil
@@ -61,7 +62,7 @@ func (sr *ShipResult) CheckDiff() (*ShipResult, error) {
 	diffNameOutput, err := diffNameCmd.Output()
 	if err != nil {
 		if _, ok := err.(*exec.ExitError); ok {
-			// grep didn’t match anything — this is normal
+			// grep didn’t match anything so just keep going
 			fmt.Println("No matching patterns found")
 		} else {
 			return sr, fmt.Errorf("git diff failed: %w", err)
@@ -69,16 +70,21 @@ func (sr *ShipResult) CheckDiff() (*ShipResult, error) {
 	}
 
 	// Need the relative path or else it won't work
-	// repoRootCmd := exec.Command("git", "rev-parse", "--show-toplevel")
-	// rootBytes, err := repoRootCmd.CombinedOutput()
-	// repoRoot := strings.TrimSpace(string(rootBytes))
+	// So just go to working directory
+	repoRootCmd := exec.Command("git", "rev-parse", "--show-toplevel")
+	rootBytes, err := repoRootCmd.Output()
+	repoRoot := strings.TrimSpace(string(rootBytes))
+	os.Chdir(repoRoot)
 
-	fmt.Printf("diffOuput %s", string(diffNameOutput))
 	files := strings.Split(strings.TrimSpace(string(diffNameOutput)), "\n")
-	patterns := []string{"console.log", "error_log"}
 
+	if err != nil {
+		fmt.Println("Loading Patterns File Failed: %w", err)
+	}
+
+	// Loop over the files from the --name-only
 	for _, file := range files {
-		fmt.Printf("FIle %s", file)
+		// Run a diff on each file
 		cmd := exec.Command("git", "diff", file)
 		diffBytes, err := cmd.CombinedOutput()
 		if err != nil {
@@ -87,25 +93,20 @@ func (sr *ShipResult) CheckDiff() (*ShipResult, error) {
 		}
 
 		currentFile := file
+		// Verify it is an actual diff chunk
 		for _, line := range strings.Split(string(diffBytes), "\n") {
 			if strings.HasPrefix(line, "+") && !strings.HasPrefix(line, "+++") {
 				for _, pattern := range patterns {
-					if strings.Contains(line, pattern) {
-						sr.DirtyFiles[currentFile] = "Contains: " + pattern
+					if strings.Contains(line, string(pattern)) {
+						// Add to Dirty Files
+						// Remove from CleanFiles
+						sr.DirtyFiles[currentFile] = "Contains: " + string(pattern)
 						delete(sr.CleanFiles, currentFile)
-						sr.Completed[currentFile] = true
+						// sr.Completed[currentFile] = true
 					}
 				}
 			}
 		}
 	}
-
-	// Run the git diff grep
-	// FOr any files that get returned
-	// remove it from cleanfiles
-	// add to dirty files
-	// then return acordingly in the CLI
-	// Just for now loop over and return
-	// File Name - Reason to keep it simple
 	return sr, nil
 }

@@ -1,3 +1,29 @@
 # Blame Me Later
 
-console.log
+## Summary
+
+---
+
+## Phase 1: Check we are in a git repo ✅ DONE
+
+- What branch are we on?
+- Is the repo dirty?
+
+---
+
+## Phase 2: Inspect diffs/files ✅ DONE
+
+- Just show what was found
+
+---
+
+## Phase 3: Show clean vs dirty
+
+- Ask user what they want to do
+- Can exit early
+
+---
+
+## Phase 4: Mutate
+
+- git add, git commit, git push
