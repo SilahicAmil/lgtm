@@ -10,8 +10,6 @@ import (
 
 func main() {
 	// Parse the CLI Flag
-	// cmd, args := cli.Parse(os.Args[1:])
-	// Check if there is an error
 	arg := os.Args[1:]
 
 	cmd, _, err := cli.Parse(arg)
@@ -22,9 +20,6 @@ func main() {
 
 	switch cmd {
 	case "ship":
-		// Check status
-		// Check Diff
-		// Just print the DirtyFiles for now
 		shipRes := &ship.ShipResult{
 			Branchname: "N/A",
 			CleanFiles: make(map[string]string),
@@ -33,16 +28,19 @@ func main() {
 		}
 		err := shipRes.CheckStatusAndBranch()
 		if err != nil {
+			// TODO: Make this better
 			fmt.Println("Here?")
 		}
 		fmt.Println(shipRes)
 
 		diffd, err := shipRes.CheckDiff()
 		if err != nil {
+			// TODO: Make this better
 			fmt.Println("here2")
 		}
 		fmt.Println(diffd)
 
+		//  TODO: Make this prettier and actually useable for the end user
 		for file, match := range diffd.DirtyFiles {
 			fmt.Printf("File %s - Contains: %s \n", file, match)
 		}

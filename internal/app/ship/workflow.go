@@ -16,7 +16,7 @@ type ShipResult struct {
 
 var patterns = []string{"console.log", "error_log"}
 
-// Eventually move to /git folder
+// TODO: Eventually move to /git folder
 // Split each into it's own reusable thing maybe?
 // Probably have like a client.go to handle the exec.command stuff
 func (sr *ShipResult) CheckStatusAndBranch() error {
