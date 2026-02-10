@@ -14,7 +14,13 @@ type ShipResult struct {
 	Completed  map[string]bool
 }
 
-var patterns = []string{"console.log", "error_log"}
+type CommitResult struct {
+	Commited map[string]string
+}
+
+func readPatternsFile() ([]byte, error) {
+	return os.ReadFile("config/patterns.txt")
+}
 
 // TODO: Eventually move to /git folder
 // Split each into it's own reusable thing maybe?
@@ -57,6 +63,7 @@ func (sr *ShipResult) CheckStatusAndBranch() error {
 }
 
 func (sr *ShipResult) CheckDiff() (*ShipResult, error) {
+	var patterns []string
 
 	diffNameCmd := exec.Command("git", "diff", "--name-only")
 	diffNameOutput, err := diffNameCmd.Output()
@@ -77,10 +84,14 @@ func (sr *ShipResult) CheckDiff() (*ShipResult, error) {
 	os.Chdir(repoRoot)
 
 	files := strings.Split(strings.TrimSpace(string(diffNameOutput)), "\n")
+	data, err := readPatternsFile()
 
 	if err != nil {
-		fmt.Println("Loading Patterns File Failed: %w", err)
+		return sr, fmt.Errorf("unable to load patterns.txt file: %w", err)
 	}
+
+	str := strings.TrimSpace(string(data))
+	patterns = strings.Split(str, "\n")
 
 	// Loop over the files from the --name-only
 	for _, file := range files {
@@ -97,10 +108,13 @@ func (sr *ShipResult) CheckDiff() (*ShipResult, error) {
 		for _, line := range strings.Split(string(diffBytes), "\n") {
 			if strings.HasPrefix(line, "+") && !strings.HasPrefix(line, "+++") {
 				for _, pattern := range patterns {
-					if strings.Contains(line, string(pattern)) {
+					if line == "" {
+						continue
+					}
+					if strings.Contains(line, pattern) {
 						// Add to Dirty Files
 						// Remove from CleanFiles
-						sr.DirtyFiles[currentFile] = "Contains: " + string(pattern)
+						sr.DirtyFiles[currentFile] += " contains: " + string(pattern)
 						delete(sr.CleanFiles, currentFile)
 						// sr.Completed[currentFile] = true
 					}
@@ -110,3 +124,5 @@ func (sr *ShipResult) CheckDiff() (*ShipResult, error) {
 	}
 	return sr, nil
 }
+
+// func (sr *ShipResult) AddFiles() *ShipResult {}

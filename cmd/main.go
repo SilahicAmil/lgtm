@@ -4,9 +4,13 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/fatih/color"
 	"github.com/silahicamil/lgtm/internal/app/cli"
 	"github.com/silahicamil/lgtm/internal/app/ship"
 )
+
+var RED_CLI_PROMPT = color.New(color.FgHiRed).Add(color.Underline)
+var WHITE_UNDERLINE = color.New(color.FgWhite).Add(color.BgBlack)
 
 func main() {
 	// Parse the CLI Flag
@@ -31,19 +35,30 @@ func main() {
 			// TODO: Make this better
 			fmt.Println("Here?")
 		}
-		fmt.Println(shipRes)
+		// fmt.Println(shipRes)
 
 		diffd, err := shipRes.CheckDiff()
 		if err != nil {
 			// TODO: Make this better
 			fmt.Println("here2")
 		}
-		fmt.Println(diffd)
+		// fmt.Println(diffd)
 
 		//  TODO: Make this prettier and actually useable for the end user
 		for file, match := range diffd.DirtyFiles {
-			fmt.Printf("File %s - Contains: %s \n", file, match)
+			RED_CLI_PROMPT.Printf("File %s", file)
+			WHITE_UNDERLINE.Printf(" - %s \n", match)
+			// Ask the user if they want to continue or exit
 		}
+
+		// show ALL files
+		// then put a checkbox next to each box you want to add
+		// Each one of those files we want to add it to like a CommitResult struct
+		// Once added we just run the git add for each file
+		// or git do a git add . / * if they select ALL
+		// or just exit so
+
+		// AddFiles
 		fmt.Println(cmd)
 	case "sync":
 		fmt.Println("Sync")
