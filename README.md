@@ -49,7 +49,12 @@ make build
 
 - Go version >= 1.21
 - Uses Standard Go modules
-- To run without building go run cmd/main.go <command>
+
+### To run without building:
+
+```bash
+go run cmd/main.go <command>
+```
 
 ## Contributing
 
