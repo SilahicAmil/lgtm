@@ -200,7 +200,6 @@ func (cs *CommitSelection) AddCommitMessage(commitMsg string) (string, error) {
 	cs.CommitMessage = commitMsg
 
 	pushGitCmd := exec.Command("git", "commit", "-m", commitMsg)
-	fmt.Println(pushGitCmd)
 	pushOuput, err := pushGitCmd.Output()
 
 	if err != nil {
@@ -211,11 +210,7 @@ func (cs *CommitSelection) AddCommitMessage(commitMsg string) (string, error) {
 }
 
 func PushGit(branchName string) (string, error) {
-
-	fmt.Println(branchName)
-
 	pushGitCmd := exec.Command("git", "push", "origin", branchName)
-	fmt.Println(pushGitCmd)
 	pushOuput, err := pushGitCmd.Output()
 
 	if err != nil {

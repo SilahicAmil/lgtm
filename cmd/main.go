@@ -188,18 +188,14 @@ func main() {
 			return
 		}
 
-		fmt.Println(commitResult)
-
 		commitSelection.AddCommitMessage(commitResult)
 
 		// Phase 6: Push to branchname. So git push origin <branchname (ShipResult stores this)>
-		result, err := ship.PushGit(shipRes.Branchname)
+		_, err = ship.PushGit(shipRes.Branchname)
 
 		if err != nil {
-			fmt.Println(err)
+			RED_CLI_PROMPT.Println(err)
 		}
-
-		print(result)
 
 	case "sync":
 		fmt.Println("Sync")
