@@ -17,13 +17,13 @@
 
 ---
 
-## Phase 3: Show clean vs dirty
+## Phase 3: Show clean vs dirty ✅ DONE
 
 - Ask user what they want to do
 - Can exit early
 
 ---
 
-## Phase 4: Mutate
+## Phase 4: Mutate ✅ DONE
 
 - git add, git commit, git push
