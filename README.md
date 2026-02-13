@@ -1,29 +1,56 @@
-# Blame Me Later
+# LGTM (Looks Good To Me)
 
-## Summary
-
----
-
-## Phase 1: Check we are in a git repo ✅ DONE
-
-- What branch are we on?
-- Is the repo dirty?
+**LGTM** is a simple, fun, and productive Git CLI helper that makes staging, committing, and pushing easier — with a few fun surprises along the way.
 
 ---
 
-## Phase 2: Inspect diffs/files ✅ DONE
+## Features
 
-- Just show what was found
-
----
-
-## Phase 3: Show clean vs dirty ✅ DONE
-
-- Ask user what they want to do
-- Can exit early
+- Stage and commit files quickly with the `ship` command
+- Sync your branch with another branch using `sync`
+- Undo last commit with `oops` if you made a mistake
+- Get random quotes or motivational messages with `quote`
+- Help system to show available commands
 
 ---
 
-## Phase 4: Mutate ✅ DONE
+## Installation
 
-- git add, git commit, git push
+1. Clone the repository:
+
+```bash
+git clone https://github.com/<yourusername>/blame-me-later.git
+cd blame-me-later
+```
+
+2. Build the binary:
+
+```bash
+make build
+```
+
+3. Run the CLI
+
+```bash
+./blame-me-later <command>
+```
+
+## Commands
+
+| Command | Description                                  |
+| ------- | -------------------------------------------- |
+| `help`  | Show this help message                       |
+| `ship`  | Stage, commit, and push files                |
+| `sync`  | Sync your branch with another one            |
+| `oops`  | Undo last commit and reset changes           |
+| `quote` | Print a random motivational or funny message |
+
+## Development
+
+- Go version >= 1.21
+- Uses Standard Go modules
+- To run without building go run cmd/main.go <command>
+
+## Contributing
+
+Feel free to open issues, submit PRs, or suggest CLI commands.
