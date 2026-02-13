@@ -1,8 +1,8 @@
 build:
-	go build -o lgtm ./cmd
+	go build -o blame-me-later ./cmd
 
 run:
 	go run ./cmd
 
 clean:
-	rm -f lgtm
+	rm -f blame-me-later
