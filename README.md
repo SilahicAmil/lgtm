@@ -7,8 +7,8 @@
 ## Features
 
 - Stage and commit files quickly with the `ship` command
-- Sync your branch with another branch using `sync`
-- Undo last commit with `oops` if you made a mistake
+- Sync your branch with another branch using `sync` (WIP)
+- Undo last commit with `oops` if you made a mistake (WIP)
 - Get random quotes or motivational messages with `quote`
 - Help system to show available commands
 
@@ -19,8 +19,8 @@
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/<yourusername>/blame-me-later.git
-cd blame-me-later
+git clone https://github.com/SilahicAmil/lgtm.git
+cd lgtm
 ```
 
 2. Build the binary:
@@ -32,7 +32,7 @@ make build
 3. Run the CLI
 
 ```bash
-./blame-me-later <command>
+./lgtm <command>
 ```
 
 ## Commands
