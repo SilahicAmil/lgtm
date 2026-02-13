@@ -14,8 +14,62 @@ type ShipResult struct {
 	Completed  map[string]bool
 }
 
-type CommitResult struct {
-	Commited map[string]string
+type CommitSelection struct {
+	Branchname    string
+	SelectedFiles map[string]string // filename -> status/reason
+	IncludesDirty bool              // true if user chose to include flagged files
+	CommitMessage string
+}
+
+// NewCommitSelection creates an initialized CommitSelection
+func NewCommitSelection() *CommitSelection {
+	return &CommitSelection{
+		Branchname:    "",
+		SelectedFiles: make(map[string]string),
+		IncludesDirty: false,
+		CommitMessage: "",
+	}
+}
+
+// SelectAll merges both CleanFiles and DirtyFiles into SelectedFiles
+func (cs *CommitSelection) SelectAll(sr *ShipResult) {
+	for file, status := range sr.CleanFiles {
+		cs.SelectedFiles[file] = status
+	}
+	for file, status := range sr.DirtyFiles {
+		cs.SelectedFiles[file] = status
+		cs.IncludesDirty = true
+	}
+}
+
+// SelectFiles adds specific files to the selection from ShipResult
+func (cs *CommitSelection) SelectFiles(sr *ShipResult, files []string) {
+	for _, file := range files {
+		if status, ok := sr.CleanFiles[file]; ok {
+			cs.SelectedFiles[file] = status
+		} else if status, ok := sr.DirtyFiles[file]; ok {
+			cs.SelectedFiles[file] = status
+			cs.IncludesDirty = true
+		}
+	}
+}
+
+// GetAllFilesList returns a combined list of all files (clean + dirty) for selection UI
+func (sr *ShipResult) GetAllFilesList() []string {
+	files := make([]string, 0, len(sr.CleanFiles)+len(sr.DirtyFiles))
+	for file := range sr.CleanFiles {
+		files = append(files, file)
+	}
+	for file := range sr.DirtyFiles {
+		files = append(files, file)
+	}
+	return files
+}
+
+// IsDirtyFile checks if a file is in the DirtyFiles map
+func (sr *ShipResult) IsDirtyFile(file string) bool {
+	_, ok := sr.DirtyFiles[file]
+	return ok
 }
 
 func readPatternsFile() ([]byte, error) {
@@ -125,4 +179,48 @@ func (sr *ShipResult) CheckDiff() (*ShipResult, error) {
 	return sr, nil
 }
 
-// func (sr *ShipResult) AddFiles() *ShipResult {}
+func (cs *CommitSelection) AddGitFiles() (string, error) {
+	args := []string{"add"}
+
+	for file := range cs.SelectedFiles {
+		args = append(args, file)
+	}
+
+	cmd := exec.Command("git", args...)
+	output, err := cmd.CombinedOutput()
+
+	if err != nil {
+		return "", fmt.Errorf("git add failed: %w\n%s", err, output)
+	}
+
+	return "Added files successfully", nil
+}
+
+func (cs *CommitSelection) AddCommitMessage(commitMsg string) (string, error) {
+	cs.CommitMessage = commitMsg
+
+	pushGitCmd := exec.Command("git", "commit", "-m", commitMsg)
+	fmt.Println(pushGitCmd)
+	pushOuput, err := pushGitCmd.Output()
+
+	if err != nil {
+		return "", fmt.Errorf("git commit failure: %w\n%s", err, pushOuput)
+	}
+
+	return "Added your message.", nil
+}
+
+func PushGit(branchName string) (string, error) {
+
+	fmt.Println(branchName)
+
+	pushGitCmd := exec.Command("git", "push", "origin", branchName)
+	fmt.Println(pushGitCmd)
+	pushOuput, err := pushGitCmd.Output()
+
+	if err != nil {
+		return "", fmt.Errorf("git push failure: %w\n%s", err, pushOuput)
+	}
+
+	return "Pushed to branch. Thanks for breaking Prod!", nil
+}
