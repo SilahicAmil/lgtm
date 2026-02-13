@@ -15,6 +15,14 @@ var RED_CLI_PROMPT = color.New(color.FgHiRed).Add(color.Underline)
 var GREEN_CLI_PROMPT = color.New(color.FgGreen).Add(color.BgBlack)
 var WHITE_UNDERLINE = color.New(color.FgWhite).Add(color.BgBlack)
 
+var commands = map[string]string{
+	"help":  "Show this help message",
+	"ship":  "Stage, commit, and push files",
+	"sync":  "Sync your branch with another one",
+	"oops":  "Undo last commit and reset changes",
+	"quote": "Inspirational quote to get you through the day",
+}
+
 func main() {
 	// Parse the CLI Flag
 	arg := os.Args[1:]
@@ -199,6 +207,15 @@ func main() {
 
 	case "sync":
 		fmt.Println("Sync")
+	case "oops":
+		fmt.Println("Oopsie. Time to revert")
+	case "help":
+		fmt.Println("Available commands:")
+		for cmd, desc := range commands {
+			fmt.Printf("  %-10s %s\n", cmd, desc)
+		}
+	case "quote":
+		fmt.Println("If a program is slow it might have a loop in it.")
 	}
 
 }
