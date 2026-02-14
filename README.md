@@ -1,6 +1,6 @@
 # LGTM (Looks Good To Me)
 
-**LGTM** is a simple, fun, and productive Git CLI helper that makes staging, committing, and pushing easier — with a few fun surprises along the way.
+**LGTM** is a simple, fun, and productive Git CLI helper that makes staging, committing, and pushing easier - with a few fun surprises along the way.
 
 ---
 
