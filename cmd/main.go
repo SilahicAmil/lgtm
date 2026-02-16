@@ -7,6 +7,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/silahicamil/lgtm/internal/app/cli"
+	"github.com/silahicamil/lgtm/internal/app/oops"
 	"github.com/silahicamil/lgtm/internal/app/ship"
 	"github.com/silahicamil/lgtm/internal/app/sync"
 	"github.com/spaceweasel/promptui"
@@ -185,12 +186,6 @@ func main() {
 		GREEN_CLI_PROMPT.Println("\n", csAddGit)
 
 		// Phase 5: Ask for a git commit message. Validate the user input
-		// Maybe prevent swear words and etc
-		// I think we can just store it in a variable for now
-		// since we are just passing it to a func
-		// Idk if we need it in the commitSelection struct
-		// error_log
-
 		commitMessagePrompt := promptui.Prompt{
 			Label:     "Please Enter a Commit Message",
 			Default:   "Broke everything",
@@ -281,17 +276,84 @@ func main() {
 				RED_CLI_PROMPT.Println(err)
 				return
 			}
-			GREEN_CLI_PROMPT.Println("Stashed changes restored!")
+			GREEN_CLI_PROMPT.Println("Stashed changes restored. Now get back to work!")
 		}
 	case "oops":
-		fmt.Println("Oopsie. Time to revert")
+		oopsRes := &oops.OopsResult{}
+
+		err := oopsRes.GetCurrentBranch()
+		if err != nil {
+			RED_CLI_PROMPT.Println(err)
+			return
+		}
+		GREEN_CLI_PROMPT.Printf("Current branch: %s\n", oopsRes.CurrentBranch)
+
+		// Fetch recent commits to display
+		err = oopsRes.GetRecentCommits(10) // Shows last 10 commits
+		if err != nil {
+			RED_CLI_PROMPT.Println(err)
+			return
+		}
+
+		if len(oopsRes.Commits) == 0 {
+			RED_CLI_PROMPT.Println("No commits found. Get to workin!")
+			return
+		}
+
+		// Show commits and let user pick which one to reset to
+		commitItems := oopsRes.BuildDisplayList()
+		commitItems = append(commitItems, "Exit")
+
+		commitPrompt := promptui.Select{
+			Label: "Select a commit to reset to (changes will be kept)",
+			Items: commitItems,
+		}
+
+		idx, result, err := commitPrompt.Run()
+		if err != nil {
+			fmt.Printf("Prompt Failed - %s", err)
+			return
+		}
+
+		if result == "Exit" {
+			RED_CLI_PROMPT.Println("Have a good one!")
+			return
+		}
+
+		GREEN_CLI_PROMPT.Printf("Resetting to: %s\n", oopsRes.Commits[idx].Hash)
+		err = oopsRes.ResetToCommit(idx)
+		if err != nil {
+			RED_CLI_PROMPT.Println(err)
+			return
+		}
+		GREEN_CLI_PROMPT.Println("Reset complete! You unbroke your local branch!")
+
+		// Ask if they want to force push
+		pushPrompt := promptui.Select{
+			Label: "Push the reset to remote?",
+			Items: []string{"Yes", "No"},
+		}
+
+		_, pushResult, err := pushPrompt.Run()
+		if err != nil {
+			fmt.Printf("Prompt Failed - %s", err)
+			return
+		}
+
+		if pushResult == "Yes" {
+			err = oopsRes.ForcePush()
+			if err != nil {
+				RED_CLI_PROMPT.Println(err)
+				return
+			}
+			GREEN_CLI_PROMPT.Println("Force pushed to remote! Hopefully that fixed it.")
+		}
+	case "quote":
+		fmt.Println("If a program is slow it might have a loop in it.")
 	case "help":
 		fmt.Println("Available commands:")
 		for cmd, desc := range commands {
 			fmt.Printf("  %-10s %s\n", cmd, desc)
 		}
-	case "quote":
-		fmt.Println("If a program is slow it might have a loop in it.")
 	}
-
 }
