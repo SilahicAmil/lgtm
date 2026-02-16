@@ -188,6 +188,7 @@ func main() {
 		// I think we can just store it in a variable for now
 		// since we are just passing it to a func
 		// Idk if we need it in the commitSelection struct
+		// error_log
 
 		commitMessagePrompt := promptui.Prompt{
 			Label:     "Please Enter a Commit Message",
@@ -203,8 +204,8 @@ func main() {
 
 		commitSelection.AddCommitMessage(commitResult)
 
-		// Phase 6: Push to branchname. So git push origin <branchname (ShipResult stores this)>
-		_, err = commitSelection.PushGit()
+		// Phase 6: Push to branchname.
+		_, err = ship.PushGit(shipRes.Branchname)
 
 		if err != nil {
 			RED_CLI_PROMPT.Println(err)
