@@ -7,6 +7,9 @@ import (
 	"strings"
 )
 
+// TODO: I need to make this more generic
+// and actually seperate each thing
+
 type ShipResult struct {
 	Branchname string
 	CleanFiles map[string]string
@@ -76,10 +79,11 @@ func readPatternsFile() ([]byte, error) {
 	return os.ReadFile("config/patterns.txt")
 }
 
-// TODO: Eventually move to /git folder
-// Split each into it's own reusable thing maybe?
-// Probably have like a client.go to handle the exec.command stuff
-func (sr *ShipResult) CheckStatusAndBranch() error {
+func (sr *ShipResult) CheckStatus() error {
+	cs := &CommitSelection{
+		Branchname: "",
+	}
+
 	// Get the current branch
 	branchCmd := exec.Command("git", "branch", "--show-current")
 	branchOutput, err := branchCmd.CombinedOutput()
@@ -88,6 +92,15 @@ func (sr *ShipResult) CheckStatusAndBranch() error {
 		return fmt.Errorf("failed to get branch: %w", err)
 	}
 	sr.Branchname = strings.TrimSpace(string(branchOutput))
+	cs.Branchname = strings.TrimSpace(string(branchOutput))
+
+	return nil
+}
+
+// TODO: Eventually move to /git folder
+// Split each into it's own reusable thing maybe?
+// Probably have like a client.go to handle the exec.command stuff
+func (sr *ShipResult) CheckBranch() error {
 
 	// get modified/untracked files
 	statusCmd := exec.Command("git", "status", "--porcelain")
@@ -209,8 +222,8 @@ func (cs *CommitSelection) AddCommitMessage(commitMsg string) (string, error) {
 	return "Added your message.", nil
 }
 
-func PushGit(branchName string) (string, error) {
-	pushGitCmd := exec.Command("git", "push", "origin", branchName)
+func (cs *CommitSelection) PushGit() (string, error) {
+	pushGitCmd := exec.Command("git", "push", "origin", cs.Branchname)
 	pushOuput, err := pushGitCmd.Output()
 
 	if err != nil {

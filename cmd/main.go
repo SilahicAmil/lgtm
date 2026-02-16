@@ -43,10 +43,15 @@ func main() {
 			DirtyFiles: make(map[string]string),
 			Completed:  make(map[string]bool),
 		}
-		err := shipRes.CheckStatusAndBranch()
+		err := shipRes.CheckBranch()
+		if err != nil {
+			fmt.Println("checkbranch err", err)
+		}
+
+		err = shipRes.CheckBranch()
 		if err != nil {
 			// TODO: Make this better
-			fmt.Println("Here?")
+			fmt.Println("Here?", err)
 		}
 		// fmt.Println(shipRes)
 
@@ -199,13 +204,18 @@ func main() {
 		commitSelection.AddCommitMessage(commitResult)
 
 		// Phase 6: Push to branchname. So git push origin <branchname (ShipResult stores this)>
-		_, err = ship.PushGit(shipRes.Branchname)
+		_, err = commitSelection.PushGit()
 
 		if err != nil {
 			RED_CLI_PROMPT.Println(err)
 		}
 
 	case "sync":
+		// Check branch
+		// ask if changes want to be stashed?
+		// then ask which branch they want merged in
+		// fetch it from origin
+		// then merge it
 		fmt.Println("Sync")
 	case "oops":
 		fmt.Println("Oopsie. Time to revert")
