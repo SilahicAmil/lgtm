@@ -223,6 +223,7 @@ func (cs *CommitSelection) AddCommitMessage(commitMsg string) (string, error) {
 }
 
 func (cs *CommitSelection) PushGit() (string, error) {
+	fmt.Println(cs.Branchname)
 	pushGitCmd := exec.Command("git", "push", "origin", cs.Branchname)
 	pushOuput, err := pushGitCmd.Output()
 
