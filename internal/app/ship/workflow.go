@@ -3,8 +3,9 @@ package ship
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"strings"
+
+	"github.com/silahicamil/lgtm/internal/app/util"
 )
 
 // TODO: I need to make this more generic
@@ -81,13 +82,11 @@ func readPatternsFile() ([]byte, error) {
 
 func (sr *ShipResult) CheckBranch() error {
 	// Get the current branch
-	branchCmd := exec.Command("git", "branch", "--show-current")
-	branchOutput, err := branchCmd.CombinedOutput()
-
+	branchOutput, err := util.RunGit("branch", "--show-current")
 	if err != nil {
 		return fmt.Errorf("failed to get branch: %w", err)
 	}
-	sr.Branchname = strings.TrimSpace(string(branchOutput))
+	sr.Branchname = branchOutput
 
 	return nil
 }
@@ -98,14 +97,12 @@ func (sr *ShipResult) CheckBranch() error {
 func (sr *ShipResult) CheckStatus() error {
 
 	// get modified/untracked files
-	statusCmd := exec.Command("git", "status", "--porcelain")
-	statusOutput, err := statusCmd.CombinedOutput()
-
+	statusOutput, err := util.RunGit("status", "--porcelain")
 	if err != nil {
 		return fmt.Errorf("failed to get git status: %w", err)
 	}
 
-	lines := strings.SplitSeq(string(statusOutput), "\n")
+	lines := strings.SplitSeq(statusOutput, "\n")
 
 	// parse git stauts output
 	// and add all to CleanFiles for now
@@ -127,25 +124,20 @@ func (sr *ShipResult) CheckStatus() error {
 func (sr *ShipResult) CheckDiff() (*ShipResult, error) {
 	var patterns []string
 
-	diffNameCmd := exec.Command("git", "diff", "--name-only")
-	diffNameOutput, err := diffNameCmd.Output()
+	diffNameOutput, err := util.RunGit("diff", "--name-only")
 	if err != nil {
-		if _, ok := err.(*exec.ExitError); ok {
-			// grep didn’t match anything so just keep going
-			fmt.Println("No matching patterns found")
-		} else {
-			return sr, fmt.Errorf("git diff failed: %w", err)
-		}
+		fmt.Println("No matching patterns found")
 	}
 
 	// Need the relative path or else it won't work
 	// So just go to working directory
-	repoRootCmd := exec.Command("git", "rev-parse", "--show-toplevel")
-	rootBytes, err := repoRootCmd.Output()
-	repoRoot := strings.TrimSpace(string(rootBytes))
+	repoRoot, err := util.RunGit("rev-parse", "--show-toplevel")
+	if err != nil {
+		return sr, fmt.Errorf("failed to get repo root: %w", err)
+	}
 	os.Chdir(repoRoot)
 
-	files := strings.Split(strings.TrimSpace(string(diffNameOutput)), "\n")
+	files := strings.Split(diffNameOutput, "\n")
 	data, err := readPatternsFile()
 
 	if err != nil {
@@ -158,8 +150,7 @@ func (sr *ShipResult) CheckDiff() (*ShipResult, error) {
 	// Loop over the files from the --name-only
 	for _, file := range files {
 		// Run a diff on each file
-		cmd := exec.Command("git", "diff", file)
-		diffBytes, err := cmd.CombinedOutput()
+		diffOutput, err := util.RunGit("diff", file)
 		if err != nil {
 			fmt.Println("git diff failed for file:", file, err)
 			continue
@@ -167,7 +158,7 @@ func (sr *ShipResult) CheckDiff() (*ShipResult, error) {
 
 		currentFile := file
 		// Verify it is an actual diff chunk
-		for _, line := range strings.Split(string(diffBytes), "\n") {
+		for _, line := range strings.Split(diffOutput, "\n") {
 			if strings.HasPrefix(line, "+") && !strings.HasPrefix(line, "+++") {
 				for _, pattern := range patterns {
 					if line == "" {
@@ -194,11 +185,9 @@ func (cs *CommitSelection) AddGitFiles() (string, error) {
 		args = append(args, file)
 	}
 
-	cmd := exec.Command("git", args...)
-	output, err := cmd.CombinedOutput()
-
+	_, err := util.RunGit(args...)
 	if err != nil {
-		return "", fmt.Errorf("git add failed: %w\n%s", err, output)
+		return "", err
 	}
 
 	return "Added files successfully", nil
@@ -207,24 +196,22 @@ func (cs *CommitSelection) AddGitFiles() (string, error) {
 func (cs *CommitSelection) AddCommitMessage(commitMsg string) (string, error) {
 	cs.CommitMessage = commitMsg
 
-	pushGitCmd := exec.Command("git", "commit", "-m", commitMsg)
-	pushOuput, err := pushGitCmd.Output()
-
+	_, err := util.RunGit("commit", "-m", commitMsg)
 	if err != nil {
-		return "", fmt.Errorf("git commit failure: %w\n%s", err, pushOuput)
+		return "", err
 	}
 
 	return "Added your message.", nil
 }
 
 func PushGit(branchName string) (string, error) {
-	pushGitCmd := exec.Command("git", "push", "origin", branchName)
-	pushOuput, err := pushGitCmd.Output()
-
-	// TODO: If this fails. We probably want to reset --soft HEAD~1
-	// Maybe also git restore --staged .
+	_, err := util.RunGit("push", "origin", branchName)
 	if err != nil {
-		return "", fmt.Errorf("git push failure: %w\n%s", err, pushOuput)
+		// Push failed — undo the commit but keep changes staged
+		util.RunGit("reset", "--soft", "HEAD~1")
+		// Unstage everything
+		util.RunGit("restore", "--staged", ".")
+		return "", err
 	}
 
 	return "Pushed to branch. Thanks for breaking Prod!", nil

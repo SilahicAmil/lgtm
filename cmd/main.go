@@ -8,6 +8,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/silahicamil/lgtm/internal/app/cli"
 	"github.com/silahicamil/lgtm/internal/app/ship"
+	"github.com/silahicamil/lgtm/internal/app/sync"
 	"github.com/spaceweasel/promptui"
 )
 
@@ -212,12 +213,76 @@ func main() {
 		}
 
 	case "sync":
-		// Check branch
-		// ask if changes want to be stashed?
-		// then ask which branch they want merged in
-		// fetch it from origin
-		// then merge it
-		fmt.Println("Sync")
+		syncRes := &sync.SyncResult{}
+
+		// Get the current branch
+		err := syncRes.GetCurrentBranch()
+		if err != nil {
+			RED_CLI_PROMPT.Println(err)
+			return
+		}
+		GREEN_CLI_PROMPT.Printf("Current branch: %s\n", syncRes.CurrentBranch)
+
+		// Ask if the user wants to stash changes
+		stashPrompt := promptui.Select{
+			Label: "Stash your current changes before syncing?",
+			Items: []string{"Yes", "No"},
+		}
+
+		_, stashResult, err := stashPrompt.Run()
+		if err != nil {
+			fmt.Printf("Prompt Failed - %s", err)
+			return
+		}
+
+		if stashResult == "Yes" {
+			err = syncRes.StashChanges()
+			if err != nil {
+				RED_CLI_PROMPT.Println(err)
+				return
+			}
+			GREEN_CLI_PROMPT.Println("Changes stashed!")
+		}
+
+		// Ask which branch to sync from
+		branchPrompt := promptui.Prompt{
+			Label:   "Which branch do you want to merge in",
+			Default: "main",
+		}
+
+		branchResult, err := branchPrompt.Run()
+		if err != nil {
+			fmt.Printf("Prompt Failed - %s", err)
+			return
+		}
+		syncRes.OriginBranch = branchResult
+
+		// Fetch from origin
+		GREEN_CLI_PROMPT.Printf("Fetching origin/%s...\n", syncRes.OriginBranch)
+		err = syncRes.FetchOrigin()
+		if err != nil {
+			RED_CLI_PROMPT.Println(err)
+			return
+		}
+
+		// Merge
+		GREEN_CLI_PROMPT.Printf("Merging origin/%s into %s...\n", syncRes.OriginBranch, syncRes.CurrentBranch)
+		err = syncRes.Merge()
+		if err != nil {
+			RED_CLI_PROMPT.Println(err)
+			return
+		}
+		GREEN_CLI_PROMPT.Println("Sync complete!")
+
+		// Pop stash if we stashed earlier
+		if syncRes.Stash {
+			err = syncRes.StashPop()
+			if err != nil {
+				RED_CLI_PROMPT.Println(err)
+				return
+			}
+			GREEN_CLI_PROMPT.Println("Stashed changes restored!")
+		}
 	case "oops":
 		fmt.Println("Oopsie. Time to revert")
 	case "help":
