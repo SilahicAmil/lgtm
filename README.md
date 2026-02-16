@@ -7,8 +7,8 @@
 ## Features
 
 - Stage and commit files quickly with the `ship` command
-- Sync your branch with another branch using `sync` (WIP)
-- Undo last commit with `oops` if you made a mistake (WIP)
+- Sync your branch with another branch using `sync`
+- Undo last commit with `oops` if you made a mistake
 - Get random quotes or motivational messages with `quote`
 - Help system to show available commands
 
