@@ -79,11 +79,10 @@ func readPatternsFile() ([]byte, error) {
 	return os.ReadFile("config/patterns.txt")
 }
 
-func (sr *ShipResult) CheckStatus() error {
+func (sr *ShipResult) CheckBranch() error {
 	cs := &CommitSelection{
 		Branchname: "",
 	}
-
 	// Get the current branch
 	branchCmd := exec.Command("git", "branch", "--show-current")
 	branchOutput, err := branchCmd.CombinedOutput()
@@ -100,7 +99,7 @@ func (sr *ShipResult) CheckStatus() error {
 // TODO: Eventually move to /git folder
 // Split each into it's own reusable thing maybe?
 // Probably have like a client.go to handle the exec.command stuff
-func (sr *ShipResult) CheckBranch() error {
+func (sr *ShipResult) CheckStatus() error {
 
 	// get modified/untracked files
 	statusCmd := exec.Command("git", "status", "--porcelain")
@@ -223,7 +222,6 @@ func (cs *CommitSelection) AddCommitMessage(commitMsg string) (string, error) {
 }
 
 func (cs *CommitSelection) PushGit() (string, error) {
-	fmt.Println(cs.Branchname)
 	pushGitCmd := exec.Command("git", "push", "origin", cs.Branchname)
 	pushOuput, err := pushGitCmd.Output()
 
