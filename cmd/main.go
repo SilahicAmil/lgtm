@@ -48,7 +48,7 @@ func main() {
 			fmt.Println("checkbranch err", err)
 		}
 
-		err = shipRes.CheckBranch()
+		err = shipRes.CheckStatus()
 		if err != nil {
 			// TODO: Make this better
 			fmt.Println("Here?", err)

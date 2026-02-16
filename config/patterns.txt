@@ -2,3 +2,4 @@ console.log
 error_log
 var_dump
 print_r
+fmt.Println

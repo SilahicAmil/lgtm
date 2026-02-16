@@ -80,9 +80,6 @@ func readPatternsFile() ([]byte, error) {
 }
 
 func (sr *ShipResult) CheckBranch() error {
-	cs := &CommitSelection{
-		Branchname: "",
-	}
 	// Get the current branch
 	branchCmd := exec.Command("git", "branch", "--show-current")
 	branchOutput, err := branchCmd.CombinedOutput()
@@ -91,7 +88,6 @@ func (sr *ShipResult) CheckBranch() error {
 		return fmt.Errorf("failed to get branch: %w", err)
 	}
 	sr.Branchname = strings.TrimSpace(string(branchOutput))
-	cs.Branchname = strings.TrimSpace(string(branchOutput))
 
 	return nil
 }
@@ -221,10 +217,12 @@ func (cs *CommitSelection) AddCommitMessage(commitMsg string) (string, error) {
 	return "Added your message.", nil
 }
 
-func (cs *CommitSelection) PushGit() (string, error) {
-	pushGitCmd := exec.Command("git", "push", "origin", cs.Branchname)
+func PushGit(branchName string) (string, error) {
+	pushGitCmd := exec.Command("git", "push", "origin", branchName)
 	pushOuput, err := pushGitCmd.Output()
 
+	// TODO: If this fails. We probably want to reset --soft HEAD~1
+	// Maybe also git restore --staged .
 	if err != nil {
 		return "", fmt.Errorf("git push failure: %w\n%s", err, pushOuput)
 	}
