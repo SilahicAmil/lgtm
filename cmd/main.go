@@ -201,11 +201,12 @@ func main() {
 		commitSelection.AddCommitMessage(commitResult)
 
 		// Phase 6: Push to branchname.
-		_, err = ship.PushGit(shipRes.Branchname)
+		successPush, err := ship.PushGit(shipRes.Branchname)
 
 		if err != nil {
 			RED_CLI_PROMPT.Println(err)
 		}
+		GREEN_CLI_PROMPT.Println(successPush)
 
 	case "sync":
 		syncRes := &sync.SyncResult{}
