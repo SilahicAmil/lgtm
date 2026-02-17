@@ -3,6 +3,7 @@ package ship
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/silahicamil/lgtm/internal/app/util"
@@ -77,7 +78,28 @@ func (sr *ShipResult) IsDirtyFile(file string) bool {
 }
 
 func readPatternsFile() ([]byte, error) {
-	return os.ReadFile("config/patterns.txt")
+	// 1. Try CWD-relative path (development / running from project root)
+	if data, err := os.ReadFile("config/patterns.txt"); err == nil {
+		return data, nil
+	}
+
+	// 2. Try <exe-dir>/../share/lgtm/patterns.txt (installed via make install)
+	if exePath, err := os.Executable(); err == nil {
+		sharePath := filepath.Join(filepath.Dir(exePath), "..", "share", "lgtm", "patterns.txt")
+		if data, err := os.ReadFile(sharePath); err == nil {
+			return data, nil
+		}
+	}
+
+	// 3. Try ~/.config/lgtm/patterns.txt (user-level config)
+	if home, err := os.UserHomeDir(); err == nil {
+		userPath := filepath.Join(home, ".config", "lgtm", "patterns.txt")
+		if data, err := os.ReadFile(userPath); err == nil {
+			return data, nil
+		}
+	}
+
+	return nil, fmt.Errorf("patterns.txt not found - checked ./config/patterns.txt, <install>/share/lgtm/patterns.txt, and ~/.config/lgtm/patterns.txt")
 }
 
 func (sr *ShipResult) CheckBranch() error {
