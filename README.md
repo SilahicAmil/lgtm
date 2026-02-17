@@ -16,6 +16,13 @@
 
 ## Installation
 
+### Prerequisites
+
+- Go >= 1.21
+- Make
+
+### Install
+
 1. Clone the repository:
 
 ```bash
@@ -23,16 +30,28 @@ git clone https://github.com/SilahicAmil/lgtm.git
 cd lgtm
 ```
 
-2. Build the binary:
+2. Build and install:
 
 ```bash
-make build
+sudo make install
 ```
 
-3. Run the CLI
+This installs `lgtm` to `/usr/local/bin` so you can use it from anywhere:
 
 ```bash
-./lgtm <command>
+lgtm <command>
+```
+
+To install to a custom directory (e.g. `~/.local/bin`):
+
+```bash
+make install PREFIX=~/.local
+```
+
+### Uninstall
+
+```bash
+sudo make uninstall
 ```
 
 ## Commands
@@ -46,9 +65,6 @@ make build
 | `quote` | Print a random motivational or funny message |
 
 ## Development
-
-- Go version >= 1.21
-- Uses Standard Go modules
 
 ### To run without building:
 
