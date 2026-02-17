@@ -53,14 +53,14 @@ func main() {
 		err = shipRes.CheckStatus()
 		if err != nil {
 			// TODO: Make this better
-			fmt.Println("Here?", err)
+			RED_CLI_PROMPT.Printf("Status Check Error: %s\n", err)
 		}
 		// fmt.Println(shipRes)
 
 		diffd, err := shipRes.CheckDiff()
 		if err != nil {
 			// TODO: Make this better
-			fmt.Println("here2")
+			RED_CLI_PROMPT.Printf("Diff Check Error: %s\n", err)
 		}
 		// fmt.Println(diffd)
 
