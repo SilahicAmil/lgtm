@@ -187,6 +187,10 @@ func main() {
 
 		// Phase 4: Use commitSelection.SelectedFiles for git add operations
 		csAddGit, err := commitSelection.AddGitFiles()
+		if err != nil {
+			RED_CLI_PROMPT.Printf("Failed to stage files: %s\n", err)
+			return
+		}
 		GREEN_CLI_PROMPT.Println("\n", csAddGit)
 
 		// Phase 5: Ask for a git commit message. Validate the user input
@@ -202,7 +206,11 @@ func main() {
 			return
 		}
 
-		commitSelection.AddCommitMessage(commitResult)
+		_, err = commitSelection.AddCommitMessage(commitResult)
+		if err != nil {
+			RED_CLI_PROMPT.Printf("Failed to commit: %s\n", err)
+			return
+		}
 
 		// Phase 6: Push to branchname.
 		successPush, err := ship.PushGit(shipRes.Branchname)
