@@ -10,6 +10,7 @@
 - Sync your branch with another branch using `sync`
 - Undo last commit with `oops` if you made a mistake
 - Interactively switch branches with `hop`
+- Pretty print recent commit history with `log`
 - Get random quotes or motivational messages with `quote`
 - Help system to show available commands
 
@@ -64,6 +65,7 @@ sudo make uninstall
 | `sync`  | Sync your branch with another one            |
 | `oops`  | Undo last commit and reset changes           |
 | `hop`   | Interactively switch branches                |
+| `log`   | Pretty print recent commit history           |
 | `quote` | Print a random motivational or funny message |
 
 ## Development

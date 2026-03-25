@@ -7,6 +7,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/silahicamil/lgtm/internal/app/cli"
+	"github.com/silahicamil/lgtm/internal/app/gitlog"
 	"github.com/silahicamil/lgtm/internal/app/hop"
 	"github.com/silahicamil/lgtm/internal/app/oops"
 	"github.com/silahicamil/lgtm/internal/app/ship"
@@ -24,6 +25,7 @@ var commands = map[string]string{
 	"sync":  "Sync your branch with another one",
 	"oops":  "Undo last commit and reset changes",
 	"hop":   "Interactively switch branches",
+	"log":   "Pretty print recent commit history",
 	"quote": "Inspirational quote to get you through the day",
 }
 
@@ -392,6 +394,26 @@ func main() {
 		}
 
 		GREEN_CLI_PROMPT.Printf("Hopped to %s!\n", selected)
+
+	case "log":
+		logRes := &gitlog.LogResult{}
+
+		err := logRes.Fetch(30)
+		if err != nil {
+			RED_CLI_PROMPT.Println(err)
+			return
+		}
+
+		if len(logRes.Lines) == 0 {
+			RED_CLI_PROMPT.Println("No commits yet. Get to work!")
+			return
+		}
+
+		fmt.Println()
+		for _, line := range logRes.Lines {
+			GREEN_CLI_PROMPT.Println(line)
+		}
+		fmt.Println()
 
 	case "quote":
 		fmt.Println("If a program is slow it might have a loop in it.")
