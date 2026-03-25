@@ -9,6 +9,7 @@
 - Stage and commit files quickly with the `ship` command
 - Sync your branch with another branch using `sync`
 - Undo last commit with `oops` if you made a mistake
+- Interactively switch branches with `hop`
 - Get random quotes or motivational messages with `quote`
 - Help system to show available commands
 
@@ -62,6 +63,7 @@ sudo make uninstall
 | `ship`  | Stage, commit, and push files                |
 | `sync`  | Sync your branch with another one            |
 | `oops`  | Undo last commit and reset changes           |
+| `hop`   | Interactively switch branches                |
 | `quote` | Print a random motivational or funny message |
 
 ## Development

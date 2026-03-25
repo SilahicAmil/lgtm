@@ -7,6 +7,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/silahicamil/lgtm/internal/app/cli"
+	"github.com/silahicamil/lgtm/internal/app/hop"
 	"github.com/silahicamil/lgtm/internal/app/oops"
 	"github.com/silahicamil/lgtm/internal/app/ship"
 	"github.com/silahicamil/lgtm/internal/app/sync"
@@ -22,6 +23,7 @@ var commands = map[string]string{
 	"ship":  "Stage, commit, and push files",
 	"sync":  "Sync your branch with another one",
 	"oops":  "Undo last commit and reset changes",
+	"hop":   "Interactively switch branches",
 	"quote": "Inspirational quote to get you through the day",
 }
 
@@ -349,6 +351,48 @@ func main() {
 			}
 			GREEN_CLI_PROMPT.Println("Force pushed to remote! Hopefully that fixed it.")
 		}
+	case "hop":
+		hopRes := &hop.HopResult{}
+
+		err := hopRes.GetBranches()
+		if err != nil {
+			RED_CLI_PROMPT.Println(err)
+			return
+		}
+
+		if len(hopRes.Branches) == 0 {
+			RED_CLI_PROMPT.Println("No other branches found. Make one first!")
+			return
+		}
+
+		GREEN_CLI_PROMPT.Printf("Current branch: %s\n", hopRes.CurrentBranch)
+
+		branchItems := append(hopRes.Branches, "Exit")
+
+		branchPrompt := promptui.Select{
+			Label: "Hop to which branch?",
+			Items: branchItems,
+		}
+
+		_, selected, err := branchPrompt.Run()
+		if err != nil {
+			fmt.Printf("Prompt Failed - %s", err)
+			return
+		}
+
+		if selected == "Exit" {
+			RED_CLI_PROMPT.Println("Have a good one!")
+			return
+		}
+
+		err = hopRes.Checkout(selected)
+		if err != nil {
+			RED_CLI_PROMPT.Println(err)
+			return
+		}
+
+		GREEN_CLI_PROMPT.Printf("Hopped to %s!\n", selected)
+
 	case "quote":
 		fmt.Println("If a program is slow it might have a loop in it.")
 	case "help":
